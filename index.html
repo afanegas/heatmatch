@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WärmeMatch Berlin - Nahwärme Plattform</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="styles/variables.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/map.css">
+    <link rel="stylesheet" href="styles/components.css">
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div style="display:flex; align-items:center; gap:20px;">
+            <a href="#" class="brand-logo">
+                <svg viewBox="0 0 100 100" fill="currentColor">
+                    <rect x="20" y="20" width="60" height="60" rx="4" />
+                    <path d="M50 20 L50 80 M20 50 L80 50" stroke="white" stroke-width="10" />
+                </svg>
+                <span>WärmeMatch Berlin</span>
+            </a>
+
+            <!-- Search Bar -->
+            <div class="search-container" style="display:flex; align-items:center;">
+                <input type="text" id="search-input" placeholder="Adresse oder Projekt suchen..."
+                    style="padding:8px; border:1px solid #ddd; border-radius:4px; width:300px;">
+                <button id="btn-search" class="btn btn-outline"
+                    style="padding: 8px 12px; margin-left:5px; display:flex; align-items:center; justify-content:center;"
+                    title="Suchen">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+                <button id="btn-locate" class="btn btn-outline"
+                    style="padding: 8px 12px; margin-left:5px; display:flex; align-items:center; justify-content:center;"
+                    title="Mein Standort">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="7"></circle>
+                        <line x1="12" y1="2" x2="12" y2="5"></line>
+                        <line x1="12" y1="19" x2="12" y2="22"></line>
+                        <line x1="2" y1="12" x2="5" y2="12"></line>
+                        <line x1="19" y1="12" x2="22" y2="12"></line>
+                        <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <nav class="header-nav" id="auth-nav">
+            <!-- Populated by JS -->
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+
+        <!-- Interactive Map -->
+        <div id="map"></div>
+
+        <!-- Sidebar (Shared for Details, Add Form, Profile) -->
+        <aside class="sidebar" id="main-sidebar">
+            <div class="sidebar-header">
+                <h2 id="sidebar-title">Details</h2>
+                <button class="btn btn-outline" style="border-color: white; color: white;"
+                    id="btn-close-sidebar">✕</button>
+            </div>
+            <div class="sidebar-content" id="sidebar-content">
+                <!-- Dynamic Content Injected Here -->
+            </div>
+        </aside>
+
+        <!-- Auth Modal (Simple Overlay setup) -->
+        <div id="auth-modal"
+            style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+            <div
+                style="background: white; padding: 2rem; border-radius: 8px; width: 90%; max-width: 400px; position: relative;">
+                <button id="close-auth-modal"
+                    style="position: absolute; top: 10px; right: 10px; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                <div id="auth-modal-content"></div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirm-modal"
+            style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 3000; justify-content: center; align-items: center;">
+            <div
+                style="background: white; padding: 2rem; border-radius: 8px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                <p id="confirm-message" style="margin-bottom: 20px; font-size: 1.1rem;">Sind Sie sicher?</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="btn-confirm-yes" class="btn btn-primary"
+                        style="background-color: #E30613; border-color: #E30613;">Löschen</button>
+                    <button id="btn-confirm-no" class="btn btn-outline">Abbrechen</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <a href="#">Datenschutzerklärung</a>
+        <span>|</span>
+        <a href="#">Impressum</a>
+        <a href="#">Barrierefreiheit</a>
+        <span style="margin-left: auto;">© 2026 WärmeMatch Berlin Prototype</span>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="scripts/mock-data.js"></script>
+    <script src="scripts/mock-api.js"></script>
+    <script src="scripts/map-manager.js"></script>
+    <script src="scripts/ui-manager.js"></script>
+    <script src="scripts/app.js"></script>
+</body>
+
+</html>

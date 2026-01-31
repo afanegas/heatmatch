@@ -1,0 +1,25 @@
+:root {
+    /* Berlin Brand Colors */
+    --color-primary: #004591; /* Berlin Blue */
+    --color-secondary: #333333; /* Dark Gray / Text */
+    --color-background: #F8F9FA; /* Light Gray Background */
+    --color-white: #FFFFFF;
+    --color-accent: #E30613; /* Berlin Red (Accent, spare use) */
+    --color-border: #DDDDDD;
+
+    /* Typography */
+    --font-family-base: "Arial", "Helvetica", sans-serif;
+    --font-size-base: 16px;
+    --line-height-base: 1.5;
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+}

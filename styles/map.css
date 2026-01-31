@@ -1,0 +1,42 @@
+/* Map specific styles */
+#map {
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 4px;
+    font-family: var(--font-family-base);
+}
+
+.leaflet-popup-content {
+    margin: var(--spacing-sm) var(--spacing-md);
+    line-height: 1.4;
+}
+
+/* Legend or Badges for types */
+.badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.badge-building {
+    background-color: #004591;
+}
+
+/* Blue */
+.badge-initiative {
+    background-color: #28a745;
+}
+
+/* Green */
+.badge-wasteheat {
+    background-color: #fd7e14;
+}
+
+/* Orange/Red */
