@@ -24,12 +24,12 @@ body {
     border-bottom: 5px solid var(--color-primary);
     padding: var(--spacing-sm) var(--spacing-md);
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     box-shadow: var(--shadow-sm);
     z-index: 1000;
     flex-wrap: wrap;
-    gap: var(--spacing-sm) var(--spacing-md);
+    gap: var(--spacing-sm) var(--spacing-lg);
 }
 
 .brand-logo {
@@ -47,9 +47,9 @@ body {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 280px;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 #search-input {
@@ -69,6 +69,7 @@ body {
 .header-nav {
     display: flex;
     gap: 10px;
+    margin-left: auto;
 }
 
 .btn {
@@ -172,12 +173,13 @@ body {
     }
 
     .brand-logo {
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     .header-nav {
-        justify-content: center;
+        justify-content: flex-start;
         order: 1;
+        margin-left: 0;
         /* Keep buttons near logo */
     }
 
@@ -185,6 +187,7 @@ body {
         width: 100%;
         order: 2;
         /* Search bar at the bottom of header */
+        margin-right: 0;
     }
 
     #search-input {
