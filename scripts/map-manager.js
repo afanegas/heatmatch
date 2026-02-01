@@ -21,7 +21,7 @@ class MapManager {
         this.map = L.map(this.mapId).setView([52.5200, 13.4050], 12);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende'
         }).addTo(this.map);
 
         this.map.on('click', (e) => {

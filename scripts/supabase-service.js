@@ -115,7 +115,7 @@ class SupabaseService {
                 }
             };
         }
-        return { success: false, message: "Registration failed." };
+        return { success: false, message: "Registrierung fehlgeschlagen." };
     }
 
     async _getProfile(userId) {

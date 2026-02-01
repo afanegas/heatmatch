@@ -61,14 +61,23 @@ class App {
 
             if (errorCode === 'otp_expired') {
                 console.warn("Email link expired or invalid, checking session anyway.");
-                // Often Supabase confirms the user even if the link shows an error on redirect
-                // because the browser might have pre-fetched the link.
             } else {
-                this.uiManager.showAlert(`Authentifizierungsfehler: ${errorMsg}`, "Fehler");
+                this.uiManager.showAlert(`Authentifizierungsfehler: ${this.translateModuleError(errorMsg)}`, "Fehler");
             }
             // Clean hash
             window.history.replaceState(null, null, window.location.pathname);
         }
+    }
+
+    translateModuleError(msg) {
+        if (!msg) return "";
+        const lowMsg = msg.toLowerCase();
+        if (lowMsg.includes("invalid login credentials")) return "Ungültige Anmeldedaten.";
+        if (lowMsg.includes("user already registered")) return "Benutzer bereits registriert.";
+        if (lowMsg.includes("email not confirmed")) return "Email-Adresse noch nicht bestätigt.";
+        if (lowMsg.includes("password should be")) return "Das Passwort ist zu kurz (mind. 6 Zeichen).";
+        if (lowMsg.includes("network request failed")) return "Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung.";
+        return msg; // Fallback
     }
 
     async refreshObjects() {
@@ -189,7 +198,7 @@ class App {
             this.uiManager.showProfile(this.currentUser); // Refresh view
             this.uiManager.showAlert("Profil aktualisiert.", "Erfolg");
         } else {
-            this.uiManager.showAlert("Fehler: " + res.message, "Fehler");
+            this.uiManager.showAlert("Fehler: " + this.translateModuleError(res.message), "Fehler");
         }
     }
 
@@ -198,21 +207,18 @@ class App {
     async handleLogin(email, password) {
         const result = await this.api.login(email, password);
         if (result.success) {
-            // Note: onAuthStateChange will handle UI update
             this.uiManager.closeAuthModal();
         } else {
-            this.uiManager.showAlert(result.message, "Anmeldefehler");
+            this.uiManager.showAlert(this.translateModuleError(result.message), "Anmeldefehler");
         }
     }
 
     async handleRegister(data) {
         const result = await this.api.register(data.displayName, data.realName, data.email, "", data.password);
         if (result.success) {
-            // Register might log in automatically or require email confirm
-            // onAuthStateChange handles auto-login if it happens
             this.uiManager.closeAuthModal();
         } else {
-            this.uiManager.showAlert(result.message, "Registrierung");
+            this.uiManager.showAlert(this.translateModuleError(result.message), "Registrierung");
         }
     }
 
@@ -249,7 +255,7 @@ class App {
             const updatedObj = objects.find(o => o.id === data.id);
             this.selectObject(updatedObj);
         } else {
-            this.uiManager.showAlert("Fehler: " + res.message, "Fehler");
+            this.uiManager.showAlert("Fehler: " + this.translateModuleError(res.message), "Fehler");
         }
     }
 
@@ -259,7 +265,7 @@ class App {
             await this.refreshObjects();
             this.uiManager.closeSidebar();
         } else {
-            this.uiManager.showAlert("Fehler: " + res.message, "Fehler");
+            this.uiManager.showAlert("Fehler: " + this.translateModuleError(res.message), "Fehler");
         }
     }
 

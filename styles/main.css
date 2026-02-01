@@ -88,6 +88,12 @@ body {
     line-height: 1;
 }
 
+.btn-icon {
+    width: 40px;
+    padding: 0;
+    flex: none !important;
+}
+
 .btn-primary {
     background-color: var(--color-primary);
     color: var(--color-white);
@@ -237,9 +243,22 @@ body {
         justify-content: center;
     }
 
-    .btn {
+    .header-nav .btn {
         flex: 1;
-        font-size: 0.9rem;
+    }
+
+    .btn {
+        height: 48px;
+        font-size: 1rem;
         padding: 0 var(--spacing-sm);
+    }
+
+    #search-input {
+        height: 48px;
+    }
+
+    .btn-icon {
+        width: 48px;
+        height: 48px;
     }
 }
