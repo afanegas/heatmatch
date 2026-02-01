@@ -42,6 +42,10 @@ alter table if exists profiles enable row level security;
 alter table if exists objects_data enable row level security;
 alter table if exists comments enable row level security;
 
+-- Add new columns for Project type
+alter table if exists objects_data add column if not exists implementation_schedule text;
+alter table if exists objects_data add column if not exists additional_consumers_possible boolean default false;
+
 -- TABLE GRANTS (Required for users to perform any actions)
 grant select, insert, update, delete on objects_data to authenticated;
 grant select, insert, update, delete on profiles to authenticated;
@@ -66,11 +70,12 @@ create policy "Authenticated users can insert objects" on objects_data for inser
 -- =========================================================
 -- 3. MASKING VIEW
 -- =========================================================
+drop view if exists objects;
 create or replace view objects as
 select
   id, user_id, category, name, address, type, size_sqm, heating_system, energy_source, 
   heating_year, planned_replacement_year, estimated_demand, geom, website, org_type, 
-  goal, source_type, info,
+  goal, source_type, info, implementation_schedule, additional_consumers_possible,
   (
     case 
       when (contact->>'hideEmail')::boolean = true and (auth.uid() is null or auth.uid() != user_id) then contact - 'email'
@@ -92,3 +97,5 @@ grant select on objects to anon, authenticated;
 -- =========================================================
 create policy "Comments are public" on comments for select using ( true );
 create policy "Authenticated users can create comments" on comments for insert to authenticated with check ( auth.uid() = user_id );
+
+grant select on comments to anon, authenticated;

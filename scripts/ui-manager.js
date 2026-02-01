@@ -101,14 +101,16 @@ class UIManager {
             <h3>Was möchten Sie hinzufügen?</h3>
             <p>Wählen Sie einen Typ aus und klicken Sie anschließend auf die Karte.</p>
             <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
-                <button class="btn btn-primary" id="select-building" style="background-color: var(--color-primary);">Gebäude (Wärmebedarf)</button>
-                <button class="btn btn-primary" id="select-initiative" style="background-color: #28a745; border-color: #28a745;">Initiative</button>
+                <button class="btn btn-primary" id="select-building" style="background-color: var(--color-primary);">Interessensbekundung (Gebäude)</button>
+                <button class="btn btn-primary" id="select-project" style="background-color: #E30613; border-color: #E30613;">Wärmenetzprojekt</button>
+                <button class="btn btn-primary" id="select-initiative" style="background-color: #28a745; border-color: #28a745;">Wärmenetzinitiative</button>
                 <button class="btn btn-primary" id="select-wasteheat" style="background-color: #fd7e14; border-color: #fd7e14;">Abwärme-Quelle</button>
             </div>
         `;
         this.openSidebar("Neues Objekt", html);
 
         document.getElementById('select-building').addEventListener('click', () => this.app.enablePlacementMode('building'));
+        document.getElementById('select-project').addEventListener('click', () => this.app.enablePlacementMode('project'));
         document.getElementById('select-initiative').addEventListener('click', () => this.app.enablePlacementMode('initiative'));
         document.getElementById('select-wasteheat').addEventListener('click', () => this.app.enablePlacementMode('wasteheat'));
     }
@@ -150,6 +152,19 @@ class UIManager {
                  <div class="form-group"><label class="form-label">Typ</label><input type="text" class="form-control" name="orgType"></div>
                  <div class="form-group"><label class="form-label">Zielsetzung</label><textarea class="form-control" name="goal"></textarea></div>
                  <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info"></textarea></div>
+            `;
+        } else if (type === 'project') {
+            formHTML = `
+                <div class="form-group"><label class="form-label">Name des Projekts *</label><input type="text" class="form-control" name="name" required></div>
+                <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website"></div>
+                <div class="form-group"><label class="form-label">Umsetzungszeitplan</label><input type="text" class="form-control" name="implementationSchedule"></div>
+                <div class="form-group">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="additionalConsumersPossible" name="additionalConsumersPossible" value="true">
+                        <label for="additionalConsumersPossible" style="margin:0;">Weitere Abnehmer möglich</label>
+                    </div>
+                </div>
+                <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info"></textarea></div>
             `;
         } else if (type === 'wasteheat') {
             formHTML = `
@@ -208,8 +223,9 @@ class UIManager {
 
     getCategoryLabel(category) {
         const labels = {
-            'building': 'Gebäude',
-            'initiative': 'Initiative',
+            'building': 'Interessensbekundung (Gebäude)',
+            'initiative': 'Wärmenetzinitiative',
+            'project': 'Wärmenetzprojekt',
             'wasteheat': 'Abwärme'
         };
         return labels[category] || category;
@@ -239,6 +255,13 @@ class UIManager {
                 ${obj.website ? `<p><strong>Website:</strong> <a href="${obj.website}" target="_blank" rel="noopener noreferrer">${obj.website}</a></p>` : ''}
                 ${obj.orgType ? `<p><strong>Typ:</strong> ${obj.orgType}</p>` : ''}
                 <p><strong>Ziel:</strong> ${obj.goal || '-'}</p>
+            `;
+        } else if (obj.category === 'project') {
+            detailsHtml += `
+                <p><strong>Name:</strong> ${obj.name}</p>
+                ${obj.website ? `<p><strong>Website:</strong> <a href="${obj.website}" target="_blank" rel="noopener noreferrer">${obj.website}</a></p>` : ''}
+                ${obj.implementationSchedule ? `<p><strong>Umsetzungszeitplan:</strong> ${obj.implementationSchedule}</p>` : ''}
+                <p><strong>Weitere Abnehmer möglich:</strong> ${obj.additionalConsumersPossible ? 'Ja' : 'Nein'}</p>
             `;
         } else if (obj.category === 'wasteheat') {
             detailsHtml += `
@@ -343,6 +366,19 @@ class UIManager {
                  <div class="form-group"><label class="form-label">Typ</label><input type="text" class="form-control" name="orgType" value="${obj.orgType || ''}"></div>
                  <div class="form-group"><label class="form-label">Zielsetzung</label><textarea class="form-control" name="goal">${obj.goal || ''}</textarea></div>
                  <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info">${obj.info || ''}</textarea></div>
+            `;
+        } else if (type === 'project') {
+            formHTML = `
+                <div class="form-group"><label class="form-label">Name des Projekts *</label><input type="text" class="form-control" name="name" value="${obj.name || ''}" required></div>
+                <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website" value="${obj.website || ''}"></div>
+                <div class="form-group"><label class="form-label">Umsetzungszeitplan</label><input type="text" class="form-control" name="implementationSchedule" value="${obj.implementationSchedule || ''}"></div>
+                <div class="form-group">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="editAdditionalConsumersPossible" name="additionalConsumersPossible" value="true" ${obj.additionalConsumersPossible ? 'checked' : ''}>
+                        <label for="editAdditionalConsumersPossible" style="margin:0;">Weitere Abnehmer möglich</label>
+                    </div>
+                </div>
+                <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info">${obj.info || ''}</textarea></div>
             `;
         } else if (type === 'wasteheat') {
             formHTML = `

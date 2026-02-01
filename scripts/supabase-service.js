@@ -144,29 +144,46 @@ class SupabaseService {
     // --- Objects ---
 
     async getObjects() {
-        const { data, error } = await this.client
+        // Fetch objects from the view (masked)
+        const { data: objects, error: objError } = await this.client
             .from('objects')
-            .select(`
-                *,
-                comments (
-                    id,
-                    user_id,
-                    author_name,
-                    text,
-                    timestamp
-                )
-            `);
+            .select('*');
 
-        if (error) {
-            console.error("Error fetching objects:", error);
+        if (objError) {
+            console.error("Error fetching objects:", objError);
             return [];
         }
 
-        // Transform data to match App expects (camelCase)
-        return data.map(o => this._mapObject(o));
+        // Fetch all comments separately to avoid join issues with the view
+        const { data: comments, error: commError } = await this.client
+            .from('comments')
+            .select('*')
+            .order('timestamp', { ascending: true });
+
+        if (commError) {
+            console.error("Error fetching comments:", commError);
+            // We can still return objects without comments
+        }
+
+        // Map comments to their objects (use String key to be safe)
+        const commentsMap = {};
+        if (comments) {
+            comments.forEach(c => {
+                const oid = String(c.object_id);
+                if (!commentsMap[oid]) commentsMap[oid] = [];
+                commentsMap[oid].push(c);
+            });
+        }
+
+        // Transform data to match App expects (camelCase) and attach comments
+        return (objects || []).map(o => {
+            const objComments = commentsMap[String(o.id)] || [];
+            return this._mapObject(o, objComments);
+        });
     }
 
-    _mapObject(o) {
+    _mapObject(o, comments = []) {
+        if (!o) return null;
         return {
             id: o.id,
             userId: o.user_id,
@@ -187,7 +204,9 @@ class SupabaseService {
             goal: o.goal,
             sourceType: o.source_type,
             info: o.info,
-            comments: (o.comments || []).map(c => ({
+            implementationSchedule: o.implementation_schedule,
+            additionalConsumersPossible: o.additional_consumers_possible,
+            comments: (comments || []).map(c => ({
                 id: c.id,
                 userId: c.user_id,
                 authorName: c.author_name,

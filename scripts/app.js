@@ -274,8 +274,10 @@ class App {
         const res = await this.api.addComment(objId, this.currentUser.id, text, authorName);
         if (res.success) {
             const objects = await this.api.getObjects();
-            const obj = objects.find(o => o.id === objId);
-            this.uiManager.showObjectDetails(obj);
+            const obj = objects.find(o => String(o.id) === String(objId));
+            if (obj) {
+                this.uiManager.showObjectDetails(obj);
+            }
         }
     }
 }

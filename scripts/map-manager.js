@@ -13,6 +13,7 @@ class MapManager {
         this.colors = {
             building: '#004591',
             initiative: '#28a745',
+            project: '#E30613',
             wasteheat: '#fd7e14'
         };
     }
