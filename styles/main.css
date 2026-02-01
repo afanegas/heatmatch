@@ -22,13 +22,14 @@ body {
 .site-header {
     background-color: var(--color-white);
     border-bottom: 5px solid var(--color-primary);
-    /* The red line in Berlin.de is actually red, but we use primary valid color or accent? User request: Primary Blue: #004591. Berlin.de top bar is red. I will stick to user request for Blue/White but maybe add the red accent line for authenticity if it fits, otherwise use Blue. User said: Color Scheme: Berlin city colors (Primary Blue: #004591). I will use Blue for the main branding. */
-    padding: var(--spacing-md) var(--spacing-xl);
+    padding: var(--spacing-sm) var(--spacing-md);
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--shadow-sm);
     z-index: 1000;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm) var(--spacing-md);
 }
 
 .brand-logo {
@@ -39,6 +40,25 @@ body {
     font-size: 1.5rem;
     color: var(--color-secondary);
     text-decoration: none;
+    flex-shrink: 0;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex: 1;
+    min-width: 280px;
+    justify-content: center;
+}
+
+#search-input {
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 400px;
+    height: 40px;
 }
 
 .brand-logo svg {
@@ -48,17 +68,23 @@ body {
 
 .header-nav {
     display: flex;
-    gap: var(--spacing-md);
+    gap: 10px;
 }
 
 .btn {
-    padding: var(--spacing-sm) var(--spacing-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    /* Standardize height */
+    padding: 0 var(--spacing-md);
     border: none;
     border-radius: 4px;
     font-weight: bold;
     cursor: pointer;
     font-family: inherit;
     transition: background-color 0.2s;
+    line-height: 1;
 }
 
 .btn-primary {
@@ -92,11 +118,11 @@ body {
 /* Sidebar/Modal Containers */
 .sidebar {
     width: 400px;
+    max-width: 100%;
     background: var(--color-white);
     border-right: 1px solid var(--color-border);
     overflow-y: auto;
     display: flex;
-    /* Hidden by default or toggled? We'll use classes */
     flex-direction: column;
     position: absolute;
     top: 0;
@@ -128,10 +154,89 @@ body {
 /* Footer Placeholder */
 .site-footer {
     background-color: var(--color-white);
-    padding: var(--spacing-sm) var(--spacing-xl);
+    padding: var(--spacing-sm) var(--spacing-md);
     font-size: 0.8rem;
     border-top: 1px solid var(--color-border);
     display: flex;
+    flex-wrap: wrap;
     gap: var(--spacing-md);
     color: #666;
+}
+
+/* Media Queries */
+@media (max-width: 940px) {
+    .site-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-sm);
+    }
+
+    .brand-logo {
+        justify-content: center;
+    }
+
+    .header-nav {
+        justify-content: center;
+        order: 1;
+        /* Keep buttons near logo */
+    }
+
+    .search-container {
+        width: 100%;
+        order: 2;
+        /* Search bar at the bottom of header */
+    }
+
+    #search-input {
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .site-header {
+        padding: var(--spacing-sm);
+    }
+
+    .brand-logo {
+        font-size: 1.25rem;
+    }
+
+    .brand-logo svg {
+        height: 32px;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .site-footer {
+        justify-content: center;
+        gap: var(--spacing-sm);
+        text-align: center;
+    }
+
+    .site-footer span {
+        display: none;
+        /* Hide separators */
+    }
+
+    .site-footer span:last-of-type {
+        display: inline;
+        width: auto;
+        margin-left: 0 !important;
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-nav {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn {
+        flex: 1;
+        font-size: 0.9rem;
+        padding: 0 var(--spacing-sm);
+    }
 }

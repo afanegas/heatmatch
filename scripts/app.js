@@ -64,7 +64,7 @@ class App {
                 // Often Supabase confirms the user even if the link shows an error on redirect
                 // because the browser might have pre-fetched the link.
             } else {
-                alert(`Authentifizierungsfehler: ${errorMsg}`);
+                this.uiManager.showAlert(`Authentifizierungsfehler: ${errorMsg}`, "Fehler");
             }
             // Clean hash
             window.history.replaceState(null, null, window.location.pathname);
@@ -82,7 +82,7 @@ class App {
         this.placementType = type;
         this.uiManager.closeSidebar(true); // true = fail-safe, do NOT cancel mode
         this.mapManager.setPlacementMode(true);
-        alert(`Platzierungsmodus: Bitte klicken Sie auf die Position für ${type}.`);
+        this.uiManager.showAlert(`Platzierungsmodus: Bitte klicken Sie auf die Position für ${this.uiManager.getCategoryLabel(type)}.`, "Objekt platzieren");
     }
 
     cancelPlacementMode() {
@@ -140,17 +140,17 @@ class App {
                 const lon = parseFloat(data[0].lon);
                 this.mapManager.flyTo(lat, lon, 16);
             } else {
-                alert("Keine Ergebnisse gefunden.");
+                this.uiManager.showAlert("Keine Ergebnisse gefunden.", "Suche");
             }
         } catch (e) {
             console.error(e);
-            alert("Fehler bei der Adresssuche.");
+            this.uiManager.showAlert("Fehler bei der Adresssuche.", "Fehler");
         }
     }
 
     handleLocateMe() {
         if (!navigator.geolocation) {
-            alert("Geolokalisierung wird von Ihrem Browser nicht unterstützt.");
+            this.uiManager.showAlert("Geolokalisierung wird von Ihrem Browser nicht unterstützt.", "Info");
             return;
         }
 
@@ -165,7 +165,7 @@ class App {
             },
             (err) => {
                 console.error(err);
-                alert("Standort konnte nicht abgerufen werden. Bitte erlauben Sie den Zugriff.");
+                this.uiManager.showAlert("Standort konnte nicht abgerufen werden. Bitte erlauben Sie den Zugriff.", "Standort-Fehler");
             }
         );
     }
@@ -187,9 +187,9 @@ class App {
         if (res.success) {
             this.uiManager.updateAuthNav(this.currentUser);
             this.uiManager.showProfile(this.currentUser); // Refresh view
-            alert("Profil aktualisiert.");
+            this.uiManager.showAlert("Profil aktualisiert.", "Erfolg");
         } else {
-            alert("Fehler: " + res.message);
+            this.uiManager.showAlert("Fehler: " + res.message, "Fehler");
         }
     }
 
@@ -201,7 +201,7 @@ class App {
             // Note: onAuthStateChange will handle UI update
             this.uiManager.closeAuthModal();
         } else {
-            alert(result.message);
+            this.uiManager.showAlert(result.message, "Anmeldefehler");
         }
     }
 
@@ -212,7 +212,7 @@ class App {
             // onAuthStateChange handles auto-login if it happens
             this.uiManager.closeAuthModal();
         } else {
-            alert(result.message);
+            this.uiManager.showAlert(result.message, "Registrierung");
         }
     }
 
@@ -223,7 +223,7 @@ class App {
 
     async handleSaveObject(data) {
         if (!this.currentUser || String(this.currentUser.id).length < 10) {
-            alert("Sitzungsfehler: Bitte melden Sie sich erneut an.");
+            this.uiManager.showAlert("Sitzungsfehler: Bitte melden Sie sich erneut an.", "Sitzung abgelaufen");
             this.logout();
             return;
         }
@@ -235,7 +235,7 @@ class App {
             this.selectObject(newObj);
         } catch (e) {
             console.error("Save Error:", e);
-            alert("Fehler beim Speichern: " + e.message);
+            this.uiManager.showAlert("Fehler beim Speichern: " + e.message, "Fehler");
         }
     }
 
@@ -249,7 +249,7 @@ class App {
             const updatedObj = objects.find(o => o.id === data.id);
             this.selectObject(updatedObj);
         } else {
-            alert("Fehler: " + res.message);
+            this.uiManager.showAlert("Fehler: " + res.message, "Fehler");
         }
     }
 
@@ -259,7 +259,7 @@ class App {
             await this.refreshObjects();
             this.uiManager.closeSidebar();
         } else {
-            alert("Fehler: " + res.message);
+            this.uiManager.showAlert("Fehler: " + res.message, "Fehler");
         }
     }
 

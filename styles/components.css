@@ -32,6 +32,8 @@
     border-radius: 4px;
     margin-bottom: var(--spacing-md);
     background-color: var(--color-white);
+    width: 100%;
+    word-wrap: break-word;
 }
 
 /* Comments */

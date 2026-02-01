@@ -7,10 +7,11 @@ class UIManager {
         this.authModal = document.getElementById('auth-modal');
         this.authModalContent = document.getElementById('auth-modal-content');
 
-        this.confirmModal = document.getElementById('confirm-modal');
-        this.confirmMessage = document.getElementById('confirm-message');
-        this.btnConfirmYes = document.getElementById('btn-confirm-yes');
-        this.btnConfirmNo = document.getElementById('btn-confirm-no');
+        this.appModal = document.getElementById('app-modal');
+        this.modalTitle = document.getElementById('modal-title');
+        this.modalMessage = document.getElementById('modal-message');
+        this.btnModalPrimary = document.getElementById('btn-modal-primary');
+        this.btnModalSecondary = document.getElementById('btn-modal-secondary');
 
         this.initListeners();
     }
@@ -35,8 +36,8 @@ class UIManager {
         const nav = document.getElementById('auth-nav');
         if (user) {
             nav.innerHTML = `
-                <button class="btn btn-primary" id="btn-create-object" style="margin-right:20px; background-color:#E30613; border-color:#E30613;">+ Objekt erstellen</button>
-                <div style="display:inline-block; margin-right:10px; font-weight:bold;">${user.displayName || user.realName}</div>
+                <button class="btn btn-primary" id="btn-create-object" style="background-color:#E30613; border-color:#E30613;">+ Objekt erstellen</button>
+                <div style="display:flex; align-items:center; gap:5px; font-weight:bold; margin: 0 5px;">${user.displayName || user.realName}</div>
                 <button class="btn btn-outline" id="btn-profile">Profil</button>
                 <button class="btn btn-outline" id="btn-my-entries">Meine Objekte</button>
                 <button class="btn btn-outline" id="btn-logout" style="border:none;">Abmelden</button>
@@ -221,11 +222,29 @@ class UIManager {
         let detailsHtml = `<p><strong>Kategorie:</strong> <span class="badge badge-${obj.category}">${categoryLabel}</span></p>`;
 
         if (obj.category === 'building') {
-            detailsHtml += `<p><strong>Name:</strong> ${obj.name || 'Unbenannt'}</p><p><strong>Adresse:</strong> ${obj.address}</p><p><strong>Bedarf:</strong> ${obj.estimatedDemand} kWh/Jahr</p>`;
+            detailsHtml += `
+                <p><strong>Name:</strong> ${obj.name || 'Unbenannt'}</p>
+                <p><strong>Adresse:</strong> ${obj.address}</p>
+                <p><strong>Bedarf:</strong> ${obj.estimatedDemand ? obj.estimatedDemand.toLocaleString('de-DE') : '-'} kWh/Jahr</p>
+                ${obj.type ? `<p><strong>Gebäudetyp:</strong> ${obj.type}</p>` : ''}
+                ${obj.sizeSqm ? `<p><strong>Größe:</strong> ${obj.sizeSqm} m²</p>` : ''}
+                ${obj.heatingSystem ? `<p><strong>Heizsystem:</strong> ${obj.heatingSystem}</p>` : ''}
+                ${obj.energySource ? `<p><strong>Energieträger:</strong> ${obj.energySource}</p>` : ''}
+                ${obj.heatingYear ? `<p><strong>Baujahr Heizung:</strong> ${obj.heatingYear}</p>` : ''}
+                ${obj.plannedReplacementYear ? `<p><strong>Geplanter Tausch:</strong> ${obj.plannedReplacementYear}</p>` : ''}
+            `;
         } else if (obj.category === 'initiative') {
-            detailsHtml += `<p><strong>Name:</strong> ${obj.name}</p><p><strong>Ziel:</strong> ${obj.goal}</p>`;
+            detailsHtml += `
+                <p><strong>Name:</strong> ${obj.name}</p>
+                ${obj.website ? `<p><strong>Website:</strong> <a href="${obj.website}" target="_blank" rel="noopener noreferrer">${obj.website}</a></p>` : ''}
+                ${obj.orgType ? `<p><strong>Typ:</strong> ${obj.orgType}</p>` : ''}
+                <p><strong>Ziel:</strong> ${obj.goal || '-'}</p>
+            `;
         } else if (obj.category === 'wasteheat') {
-            detailsHtml += `<p><strong>Quelle:</strong> ${obj.name}</p>`;
+            detailsHtml += `
+                <p><strong>Quelle:</strong> ${obj.name}</p>
+                ${obj.sourceType ? `<p><strong>Typ:</strong> ${obj.sourceType}</p>` : ''}
+            `;
         }
 
         if (obj.info) {
@@ -277,7 +296,7 @@ class UIManager {
 
         if (isOwner) {
             document.getElementById('btn-delete').addEventListener('click', () => {
-                this.showConfirmModal("Sind Sie sicher, dass Sie dieses Objekt dauerhaft löschen möchten?", () => {
+                this.showConfirm("Sind Sie sicher, dass Sie dieses Objekt dauerhaft löschen möchten?", "Objekt löschen", () => {
                     this.app.handleDeleteObject(obj.id);
                 });
             });
@@ -393,26 +412,51 @@ class UIManager {
     openAuthModal(html) { this.authModalContent.innerHTML = html; this.authModal.style.display = 'flex'; }
     closeAuthModal() { this.authModal.style.display = 'none'; }
 
-    showConfirmModal(message, onConfirm) {
-        this.confirmMessage.textContent = message;
-        this.confirmModal.style.display = 'flex';
+    // --- MODALS ---
 
-        const close = () => {
-            this.confirmModal.style.display = 'none';
-            this.btnConfirmYes.removeEventListener('click', handleYes);
-            this.btnConfirmNo.removeEventListener('click', handleNo);
+    showAlert(message, title = null) {
+        this.modalTitle.textContent = title || '';
+        this.modalTitle.style.display = title ? 'block' : 'none';
+        this.modalMessage.textContent = message;
+        this.btnModalPrimary.textContent = 'OK';
+        this.btnModalSecondary.style.display = 'none';
+
+        this.appModal.style.display = 'flex';
+
+        const handleOk = () => {
+            this.appModal.style.display = 'none';
+            this.btnModalPrimary.removeEventListener('click', handleOk);
         };
 
-        const handleYes = () => {
-            close();
-            onConfirm();
+        this.btnModalPrimary.addEventListener('click', handleOk);
+    }
+
+    showConfirm(message, title = null, onConfirm) {
+        this.modalTitle.textContent = title || 'Bestätigen';
+        this.modalTitle.style.display = title ? 'block' : 'none';
+        this.modalMessage.textContent = message;
+        this.btnModalPrimary.textContent = 'Ja';
+        this.btnModalSecondary.textContent = 'Abbrechen';
+        this.btnModalSecondary.style.display = 'block';
+
+        this.appModal.style.display = 'flex';
+
+        const cleanup = () => {
+            this.appModal.style.display = 'none';
+            this.btnModalPrimary.removeEventListener('click', handleConfirm);
+            this.btnModalSecondary.removeEventListener('click', handleCancel);
         };
 
-        const handleNo = () => {
-            close();
+        const handleConfirm = () => {
+            cleanup();
+            if (onConfirm) onConfirm();
         };
 
-        this.btnConfirmYes.addEventListener('click', handleYes);
-        this.btnConfirmNo.addEventListener('click', handleNo);
+        const handleCancel = () => {
+            cleanup();
+        };
+
+        this.btnModalPrimary.addEventListener('click', handleConfirm);
+        this.btnModalSecondary.addEventListener('click', handleCancel);
     }
 }
