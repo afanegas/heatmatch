@@ -168,7 +168,19 @@ class UIManager {
                 <h4>Kontakt (Pflichtfeld)</h4>
                 <div class="form-group"><label class="form-label">Name *</label><input type="text" class="form-control" name="contactName" value="${this.app.currentUser.realName || this.app.currentUser.displayName}" required></div>
                 <div class="form-group"><label class="form-label">Email *</label><input type="email" class="form-control" name="contactEmail" value="${this.app.currentUser.email}" required></div>
+                <div class="form-group">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="hideEmail" name="hideEmail">
+                        <label for="hideEmail" style="margin:0;">Email nicht öffentlich anzeigen</label>
+                    </div>
+                </div>
                 <div class="form-group"><label class="form-label">Telefon</label><input type="text" class="form-control" name="contactPhone" value="${this.app.currentUser.phone || ''}"></div>
+                <div class="form-group">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="hidePhone" name="hidePhone">
+                        <label for="hidePhone" style="margin:0;">Telefon nicht öffentlich anzeigen</label>
+                    </div>
+                </div>
                 <button type="submit" class="btn btn-primary" style="width:100%; margin-top:20px;">Objekt speichern</button>
             </form>
         `;
@@ -180,9 +192,15 @@ class UIManager {
             if (!e.target.checkValidity()) { e.target.reportValidity(); return; }
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
-            data.contact = { name: data.contactName, email: data.contactEmail, phone: data.contactPhone };
+            data.contact = {
+                name: data.contactName,
+                email: data.contactEmail,
+                phone: data.contactPhone,
+                hideEmail: !!data.hideEmail,
+                hidePhone: !!data.hidePhone
+            };
             data.geom = { lat: parseFloat(data.lat), lng: parseFloat(data.lng) };
-            delete data.contactName; delete data.contactEmail; delete data.contactPhone;
+            delete data.contactName; delete data.contactEmail; delete data.contactPhone; delete data.hideEmail; delete data.hidePhone;
             this.app.handleSaveObject(data);
         });
     }
@@ -214,7 +232,11 @@ class UIManager {
             detailsHtml += `<p><strong>Informationen:</strong> ${obj.info}</p>`;
         }
 
-        const contactHtml = obj.contact ? `<p>${obj.contact.name} | ${obj.contact.email} | ${obj.contact.phone || '-'}</p>` : '';
+        const contactHtml = obj.contact ? `
+            <p>${obj.contact.name} | 
+            ${obj.contact.hideEmail ? '<span style="color:#777; font-style:italic;">(Email nicht öffentlich)</span>' : obj.contact.email} | 
+            ${obj.contact.hidePhone ? '<span style="color:#777; font-style:italic;">(Telefon nicht öffentlich)</span>' : (obj.contact.phone || '-')}</p>
+        ` : '';
         const commentsHtml = (obj.comments || []).map(c => {
             let timeStr = '';
             if (c.timestamp) {
@@ -320,7 +342,19 @@ class UIManager {
                 <h4>Kontakt (Pflichtfeld)</h4>
                 <div class="form-group"><label class="form-label">Name *</label><input type="text" class="form-control" name="contactName" value="${obj.contact.name}" required></div>
                 <div class="form-group"><label class="form-label">Email *</label><input type="email" class="form-control" name="contactEmail" value="${obj.contact.email}" required></div>
+                <div class="form-group">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="editHideEmail" name="hideEmail" ${obj.contact.hideEmail ? 'checked' : ''}>
+                        <label for="editHideEmail" style="margin:0;">Email nicht öffentlich anzeigen</label>
+                    </div>
+                </div>
                 <div class="form-group"><label class="form-label">Telefon</label><input type="text" class="form-control" name="contactPhone" value="${obj.contact.phone || ''}"></div>
+                <div class="form-group">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="editHidePhone" name="hidePhone" ${obj.contact.hidePhone ? 'checked' : ''}>
+                        <label for="editHidePhone" style="margin:0;">Telefon nicht öffentlich anzeigen</label>
+                    </div>
+                </div>
                 <button type="submit" class="btn btn-primary" style="width:100%; margin-top:20px;">Änderungen speichern</button>
             </form>
         `;
@@ -332,9 +366,15 @@ class UIManager {
             if (!e.target.checkValidity()) { e.target.reportValidity(); return; }
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
-            data.contact = { name: data.contactName, email: data.contactEmail, phone: data.contactPhone };
+            data.contact = {
+                name: data.contactName,
+                email: data.contactEmail,
+                phone: data.contactPhone,
+                hideEmail: !!data.hideEmail,
+                hidePhone: !!data.hidePhone
+            };
             data.id = parseInt(data.id);
-            delete data.contactName; delete data.contactEmail; delete data.contactPhone;
+            delete data.contactName; delete data.contactEmail; delete data.contactPhone; delete data.hideEmail; delete data.hidePhone;
             this.app.handleUpdateObject(data);
         });
     }

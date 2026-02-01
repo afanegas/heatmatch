@@ -1,6 +1,6 @@
 class App {
     constructor() {
-        this.api = new MockAPI();
+        this.api = new SupabaseService();
         this.currentUser = null;
 
         this.mapManager = new MapManager('map',
@@ -15,16 +15,59 @@ class App {
     async init() {
         this.mapManager.init();
         await this.refreshObjects();
-        this.checkSession();
+
+        // Listen for auth changes
+        this.api.onAuthStateChange((event, user) => {
+            console.log("Auth Event:", event, user);
+            this.currentUser = user;
+            this.uiManager.updateAuthNav(user);
+
+            // Handle session persistence or logout cleanup
+            if (user) {
+                localStorage.setItem('wm_user_session', JSON.stringify(user));
+            } else {
+                localStorage.removeItem('wm_user_session');
+                this.uiManager.closeSidebar();
+            }
+
+            // If we just logged in and were viewing an object, refresh details (to show comment form)
+            if (event === 'SIGNED_IN' && this.uiManager.sidebar.classList.contains('active') && this.selectedObject) {
+                this.uiManager.showObjectDetails(this.selectedObject);
+            }
+        });
+
+        await this.checkSession();
+        this.handleUrlHash();
     }
 
-    checkSession() {
-        const storedUser = localStorage.getItem('wm_user_session');
-        if (storedUser) {
-            this.currentUser = JSON.parse(storedUser);
-            this.uiManager.updateAuthNav(this.currentUser);
+    async checkSession() {
+        const user = await this.api.getSession();
+        if (user) {
+            this.currentUser = user;
+            this.uiManager.updateAuthNav(user);
         } else {
+            // Clear local storage if no Supabase session exists
+            localStorage.removeItem('wm_user_session');
             this.uiManager.updateAuthNav(null);
+        }
+    }
+
+    handleUrlHash() {
+        const hash = window.location.hash;
+        if (hash.includes('error=')) {
+            const params = new URLSearchParams(hash.substring(1));
+            const errorMsg = params.get('error_description') || params.get('error');
+            const errorCode = params.get('error_code');
+
+            if (errorCode === 'otp_expired') {
+                console.warn("Email link expired or invalid, checking session anyway.");
+                // Often Supabase confirms the user even if the link shows an error on redirect
+                // because the browser might have pre-fetched the link.
+            } else {
+                alert(`Authentifizierungsfehler: ${errorMsg}`);
+            }
+            // Clean hash
+            window.history.replaceState(null, null, window.location.pathname);
         }
     }
 
@@ -155,15 +198,8 @@ class App {
     async handleLogin(email, password) {
         const result = await this.api.login(email, password);
         if (result.success) {
-            this.currentUser = result.user;
-            localStorage.setItem('wm_user_session', JSON.stringify(this.currentUser));
-            this.uiManager.updateAuthNav(this.currentUser);
+            // Note: onAuthStateChange will handle UI update
             this.uiManager.closeAuthModal();
-
-            // Refresh View: If User was viewing details, now they can comment
-            if (this.uiManager.sidebar.classList.contains('active') && this.selectedObject) {
-                this.uiManager.showObjectDetails(this.selectedObject);
-            }
         } else {
             alert(result.message);
         }
@@ -172,33 +208,35 @@ class App {
     async handleRegister(data) {
         const result = await this.api.register(data.displayName, data.realName, data.email, "", data.password);
         if (result.success) {
-            this.currentUser = result.user;
-            localStorage.setItem('wm_user_session', JSON.stringify(this.currentUser));
-            this.uiManager.updateAuthNav(this.currentUser);
+            // Register might log in automatically or require email confirm
+            // onAuthStateChange handles auto-login if it happens
             this.uiManager.closeAuthModal();
-
-            if (this.uiManager.sidebar.classList.contains('active') && this.selectedObject) {
-                this.uiManager.showObjectDetails(this.selectedObject);
-            }
         } else {
             alert(result.message);
         }
     }
 
-    logout() {
-        this.currentUser = null;
-        localStorage.removeItem('wm_user_session');
-        this.placementType = null;
-        this.mapManager.setPlacementMode(false);
-        this.uiManager.updateAuthNav(null);
-        this.uiManager.closeSidebar();
+    async logout() {
+        await this.api.logout();
+        // onAuthStateChange will handle UI update
     }
 
     async handleSaveObject(data) {
-        const newObj = await this.api.addObject(data, this.currentUser);
-        await this.refreshObjects();
-        this.uiManager.closeSidebar();
-        this.selectObject(newObj);
+        if (!this.currentUser || String(this.currentUser.id).length < 10) {
+            alert("Sitzungsfehler: Bitte melden Sie sich erneut an.");
+            this.logout();
+            return;
+        }
+
+        try {
+            const newObj = await this.api.addObject(data, this.currentUser);
+            await this.refreshObjects();
+            this.uiManager.closeSidebar();
+            this.selectObject(newObj);
+        } catch (e) {
+            console.error("Save Error:", e);
+            alert("Fehler beim Speichern: " + e.message);
+        }
     }
 
     async handleUpdateObject(data) {
