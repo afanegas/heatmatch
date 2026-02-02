@@ -35,17 +35,42 @@ class UIManager {
     updateAuthNav(user) {
         const nav = document.getElementById('auth-nav');
         if (user) {
+            // Extract initials from realName (format: "Firstname Lastname")
+            const getInitials = (name) => {
+                if (!name) return '??';
+                const parts = name.trim().split(/\s+/);
+                if (parts.length >= 2) {
+                    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+                }
+                return name.substring(0, 2).toUpperCase();
+            };
+            const initials = getInitials(user.realName);
+
             nav.innerHTML = `
-                <button class="btn btn-primary" id="btn-create-object" style="background-color:#E30613; border-color:#E30613;">+ Objekt erstellen</button>
-                <div style="display:flex; align-items:center; gap:5px; font-weight:bold; margin: 0 5px;">${user.displayName || user.realName}</div>
-                <button class="btn btn-outline" id="btn-profile">Profil</button>
-                <button class="btn btn-outline" id="btn-my-entries">Meine Objekte</button>
-                <button class="btn btn-outline" id="btn-logout" style="border:none;">Abmelden</button>
+                <button class="btn btn-primary" id="btn-create-object" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Neuer Antrag
+                </button>
+                <button class="btn btn-outline" id="btn-my-entries">Meine Anträge</button>
+                <button class="btn btn-icon btn-outline user-initials-btn" id="btn-profile" title="Profil">${initials}</button>
+                <button class="btn btn-icon btn-outline" id="btn-logout" title="Abmelden">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
             `;
             document.getElementById('btn-logout').addEventListener('click', () => this.app.logout());
             document.getElementById('btn-my-entries').addEventListener('click', () => this.showUserEntries(user));
             document.getElementById('btn-create-object').addEventListener('click', () => this.startCreationFlow());
             document.getElementById('btn-profile').addEventListener('click', () => this.showProfile(user));
+
+            // Add tooltip functionality
+            this.addTooltips();
         } else {
             nav.innerHTML = `
                 <button class="btn btn-primary" id="btn-login">Anmelden</button>
@@ -438,13 +463,13 @@ class UIManager {
         this.app.api.getObjects().then(objects => {
             const myObjects = objects.filter(o => o.userId === user.id);
             const html = myObjects.length ? `<div class="list-group">${myObjects.map(o => `<div class="building-card item-my-entry" data-id="${o.id}" style="cursor:pointer;"><strong>${o.name || o.address}</strong> <span class="badge badge-${o.category}">${this.getCategoryLabel(o.category)}</span></div>`).join('')}</div>` : "<p>Keine Einträge.</p>";
-            this.openSidebar("Meine Objekte", html);
+            this.openSidebar("Meine Anträge", html);
             document.querySelectorAll('.item-my-entry').forEach(el => el.addEventListener('click', () => this.app.selectObject(objects.find(x => x.id == el.dataset.id))));
         });
     }
 
-    showLoginForm() { this.openAuthModal(`<h2>Anmelden</h2><form id="login-form"><div class="form-group"><label>Email</label><input type="email" class="form-control" name="email" value="max@example.com" required></div><div class="form-group"><label>Passwort</label><input type="password" class="form-control" name="password" value="password123" required></div><button type="submit" class="btn btn-primary" style="width:100%">Anmelden</button></form>`); document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); this.app.handleLogin(e.target.elements.email.value, e.target.elements.password.value); }); }
-    showRegisterForm() { this.openAuthModal(`<h2>Registrieren</h2><form id="register-form"><div class="form-group"><label>Anzeigename (z.B. Firma/Inititative)</label><input type="text" class="form-control" name="displayName" required></div><div class="form-group"><label>Echter Name (Privat)</label><input type="text" class="form-control" name="realName" required></div><div class="form-group"><label>Email</label><input type="email" class="form-control" name="email" required></div><div class="form-group"><label>Passwort</label><input type="password" class="form-control" name="password" required></div><button type="submit" class="btn btn-primary" style="width:100%">Registrieren</button></form>`); document.getElementById('register-form').addEventListener('submit', (e) => { e.preventDefault(); this.app.handleRegister(Object.fromEntries(new FormData(e.target).entries())); }); }
+    showLoginForm() { this.openAuthModal(`<h2>Anmelden</h2><form id="login-form"><div class="form-group"><input type="email" class="form-control" name="email" placeholder="E-Mail-Adresse" required></div><div class="form-group"><input type="password" class="form-control" name="password" placeholder="Passwort" required></div><button type="submit" class="btn btn-primary" style="width:100%">Anmelden</button></form>`); document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); this.app.handleLogin(e.target.elements.email.value, e.target.elements.password.value); }); }
+    showRegisterForm() { this.openAuthModal(`<h2>Registrieren</h2><form id="register-form"><div class="form-group"><label>Vorname *</label><input type="text" class="form-control" name="firstName" required></div><div class="form-group"><label>Nachname *</label><input type="text" class="form-control" name="lastName" required></div><div class="form-group"><label>Anzeigename (z.B. Firma/Inititative)</label><input type="text" class="form-control" name="displayName" required></div><div class="form-group"><label>Email</label><input type="email" class="form-control" name="email" required></div><div class="form-group"><label>Passwort</label><input type="password" class="form-control" name="password" required></div><button type="submit" class="btn btn-primary" style="width:100%">Registrieren</button></form>`); document.getElementById('register-form').addEventListener('submit', (e) => { e.preventDefault(); const formData = Object.fromEntries(new FormData(e.target).entries()); formData.realName = `${formData.firstName} ${formData.lastName}`; delete formData.firstName; delete formData.lastName; this.app.handleRegister(formData); }); }
     openAuthModal(html) { this.authModalContent.innerHTML = html; this.authModal.style.display = 'flex'; }
     closeAuthModal() { this.authModal.style.display = 'none'; }
 
@@ -494,5 +519,35 @@ class UIManager {
 
         this.btnModalPrimary.addEventListener('click', handleConfirm);
         this.btnModalSecondary.addEventListener('click', handleCancel);
+    }
+
+    addTooltips() {
+        // Simple tooltip implementation
+        const buttons = document.querySelectorAll('[title]');
+        buttons.forEach(btn => {
+            let tooltipTimeout;
+            let tooltip;
+
+            btn.addEventListener('mouseenter', () => {
+                tooltipTimeout = setTimeout(() => {
+                    tooltip = document.createElement('div');
+                    tooltip.className = 'custom-tooltip';
+                    tooltip.textContent = btn.getAttribute('title');
+                    document.body.appendChild(tooltip);
+
+                    const rect = btn.getBoundingClientRect();
+                    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+                    tooltip.style.top = rect.bottom + 8 + 'px';
+                }, 500);
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                clearTimeout(tooltipTimeout);
+                if (tooltip) {
+                    tooltip.remove();
+                    tooltip = null;
+                }
+            });
+        });
     }
 }
