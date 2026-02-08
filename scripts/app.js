@@ -216,9 +216,20 @@ class App {
     async handleRegister(data) {
         const result = await this.api.register(data.displayName, data.realName, data.email, "", data.password);
         if (result.success) {
+            // Successful registration with immediate login
             this.uiManager.closeAuthModal();
+            this.uiManager.showAlert("Registrierung erfolgreich! Sie sind jetzt angemeldet.", "Willkommen");
+        } else if (result.requiresConfirmation) {
+            // Successful registration but email confirmation required
+            this.uiManager.closeAuthModal();
+            this.uiManager.showAlert(result.message, "Registrierung erfolgreich");
+            // After the alert is dismissed, show login form
+            setTimeout(() => {
+                this.uiManager.showLoginForm();
+            }, 100);
         } else {
-            this.uiManager.showAlert(this.translateModuleError(result.message), "Registrierung");
+            // Registration failed
+            this.uiManager.showAlert(this.translateModuleError(result.message), "Registrierungsfehler");
         }
     }
 

@@ -14,8 +14,8 @@ class SupabaseService {
                 const user = {
                     id: session.user.id,
                     email: session.user.email,
-                    displayName: profile?.display_name || session.user.email.split('@')[0],
-                    realName: profile?.real_name || session.user.email.split('@')[0],
+                    displayName: profile?.display_name ?? session.user.email.split('@')[0],
+                    realName: profile?.real_name ?? session.user.email.split('@')[0],
                     phone: profile?.phone
                 };
                 callback(event, user);
@@ -33,8 +33,8 @@ class SupabaseService {
         return {
             id: session.user.id,
             email: session.user.email,
-            displayName: profile?.display_name || session.user.email.split('@')[0],
-            realName: profile?.real_name || session.user.email.split('@')[0],
+            displayName: profile?.display_name ?? session.user.email.split('@')[0],
+            realName: profile?.real_name ?? session.user.email.split('@')[0],
             phone: profile?.phone
         };
     }
@@ -74,6 +74,14 @@ class SupabaseService {
     }
 
     async register(displayName, realName, email, phone, password) {
+        // Validate that displayName and realName are not empty
+        if (!displayName || displayName.trim() === '') {
+            return { success: false, message: "Anzeigename darf nicht leer sein." };
+        }
+        if (!realName || realName.trim() === '') {
+            return { success: false, message: "Vor- und Nachname dürfen nicht leer sein." };
+        }
+
         const { data, error } = await this.client.auth.signUp({
             email: email,
             password: password
@@ -82,19 +90,24 @@ class SupabaseService {
         if (error) return { success: false, message: error.message };
 
         if (data.user && !data.session) {
-            return { success: false, message: "Registrierung erfolgreich. Bitte bestätigen Sie Ihre Email-Adresse, bevor Sie sich anmelden." };
+            // Email confirmation required
+            return {
+                success: false,
+                requiresConfirmation: true,
+                message: "Registrierung erfolgreich. Bitte bestätigen Sie Ihre Email-Adresse, bevor Sie sich anmelden."
+            };
         }
 
         if (data.user) {
-            // Create Profile
+            // Create Profile with trimmed values
             const { error: profileError } = await this.client
                 .from('profiles')
                 .insert([
                     {
                         id: data.user.id,
-                        display_name: displayName,
-                        real_name: realName,
-                        phone: phone
+                        display_name: displayName.trim(),
+                        real_name: realName.trim(),
+                        phone: phone || null
                         // email is in auth.users, but we also stored it in profiles in schema, let's keep it consistent
                     }
                 ]);
@@ -109,8 +122,8 @@ class SupabaseService {
                 user: {
                     id: data.user.id,
                     email: data.user.email,
-                    displayName,
-                    realName,
+                    displayName: displayName.trim(),
+                    realName: realName.trim(),
                     phone
                 }
             };
@@ -258,19 +271,21 @@ class SupabaseService {
             name: objectData.name,
             address: objectData.address,
             type: objectData.type,
-            size_sqm: objectData.sizeSqm,
+            size_sqm: objectData.sizeSqm ? parseFloat(objectData.sizeSqm) : null,
             heating_system: objectData.heatingSystem,
             energy_source: objectData.energySource,
-            heating_year: objectData.heatingYear,
-            planned_replacement_year: objectData.plannedReplacementYear,
-            estimated_demand: objectData.estimatedDemand,
+            heating_year: objectData.heatingYear ? parseInt(objectData.heatingYear) : null,
+            planned_replacement_year: objectData.plannedReplacementYear ? parseInt(objectData.plannedReplacementYear) : null,
+            estimated_demand: objectData.estimatedDemand ? parseFloat(objectData.estimatedDemand) : null,
             geom: objectData.geom,
             contact: objectData.contact,
             website: objectData.website,
             org_type: objectData.orgType,
             goal: objectData.goal,
             source_type: objectData.sourceType,
-            info: objectData.info
+            info: objectData.info,
+            implementation_schedule: objectData.implementationSchedule,
+            additional_consumers_possible: objectData.additionalConsumersPossible
         };
 
         // Filter out undefined

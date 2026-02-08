@@ -469,7 +469,57 @@ class UIManager {
     }
 
     showLoginForm() { this.openAuthModal(`<h2>Anmelden</h2><form id="login-form"><div class="form-group"><input type="email" class="form-control" name="email" placeholder="E-Mail-Adresse" required></div><div class="form-group"><input type="password" class="form-control" name="password" placeholder="Passwort" required></div><button type="submit" class="btn btn-primary" style="width:100%">Anmelden</button></form>`); document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); this.app.handleLogin(e.target.elements.email.value, e.target.elements.password.value); }); }
-    showRegisterForm() { this.openAuthModal(`<h2>Registrieren</h2><form id="register-form"><div class="form-group"><label>Vorname *</label><input type="text" class="form-control" name="firstName" required></div><div class="form-group"><label>Nachname *</label><input type="text" class="form-control" name="lastName" required></div><div class="form-group"><label>Anzeigename (z.B. Firma/Inititative)</label><input type="text" class="form-control" name="displayName" required></div><div class="form-group"><label>Email</label><input type="email" class="form-control" name="email" required></div><div class="form-group"><label>Passwort</label><input type="password" class="form-control" name="password" required></div><button type="submit" class="btn btn-primary" style="width:100%">Registrieren</button></form>`); document.getElementById('register-form').addEventListener('submit', (e) => { e.preventDefault(); const formData = Object.fromEntries(new FormData(e.target).entries()); formData.realName = `${formData.firstName} ${formData.lastName}`; delete formData.firstName; delete formData.lastName; this.app.handleRegister(formData); }); }
+    showRegisterForm() {
+        this.openAuthModal(`
+            <h2>Registrieren</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label>Vorname *</label>
+                    <input type="text" class="form-control" name="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Nachname *</label>
+                    <input type="text" class="form-control" name="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label>Anzeigename (z.B. Firma/Inititative) *</label>
+                    <input type="text" class="form-control" name="displayName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Passwort *</label>
+                    <input type="password" class="form-control" name="password" id="register-password" required>
+                </div>
+                <div class="form-group">
+                    <label>Passwort wiederholen *</label>
+                    <input type="password" class="form-control" name="passwordConfirm" id="register-password-confirm" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Registrieren</button>
+            </form>
+        `);
+
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = Object.fromEntries(new FormData(e.target).entries());
+
+            // Validate passwords match
+            if (formData.password !== formData.passwordConfirm) {
+                this.showAlert('Die Passwörter stimmen nicht überein.', 'Fehler');
+                return;
+            }
+
+            formData.realName = `${formData.firstName} ${formData.lastName}`;
+            delete formData.firstName;
+            delete formData.lastName;
+            delete formData.passwordConfirm;
+
+            this.app.handleRegister(formData);
+        });
+    }
     openAuthModal(html) { this.authModalContent.innerHTML = html; this.authModal.style.display = 'flex'; }
     closeAuthModal() { this.authModal.style.display = 'none'; }
 
