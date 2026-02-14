@@ -319,8 +319,37 @@ class App {
             const objects = await this.api.getObjects();
             const obj = objects.find(o => String(o.id) === String(objId));
             if (obj) {
+                this.selectedObject = obj; // Update reference so UI logic finds the new comment
                 this.uiManager.showObjectDetails(obj);
             }
+        }
+    }
+
+    async handleUpdateComment(commentId, objectId, text) {
+        const res = await this.api.updateComment(commentId, text);
+        if (res.success) {
+            const objects = await this.api.getObjects();
+            const obj = objects.find(o => String(o.id) === String(objectId));
+            if (obj) {
+                this.selectedObject = obj;
+                this.uiManager.showObjectDetails(obj);
+            }
+        } else {
+            this.uiManager.showAlert("Fehler: " + this.translateModuleError(res.message), "Fehler");
+        }
+    }
+
+    async handleDeleteComment(commentId, objectId) {
+        const res = await this.api.deleteComment(commentId);
+        if (res.success) {
+            const objects = await this.api.getObjects();
+            const obj = objects.find(o => String(o.id) === String(objectId));
+            if (obj) {
+                this.selectedObject = obj;
+                this.uiManager.showObjectDetails(obj);
+            }
+        } else {
+            this.uiManager.showAlert("Fehler: " + this.translateModuleError(res.message), "Fehler");
         }
     }
 }

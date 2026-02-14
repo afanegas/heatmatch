@@ -327,12 +327,57 @@ class UIManager {
                 const date = new Date(c.timestamp);
                 timeStr = date.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             }
-            return `<div class="comment" style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                <div style="font-size: 0.85em; color: #555; display: flex; justify-content: space-between;">
-                    <strong>${c.authorName || 'User #' + c.userId}</strong>
+
+            let contentHtml = '';
+            let authorHtml = '';
+            let actionsHtml = '';
+
+            const isOwner = this.app.currentUser && this.app.currentUser.id === c.userId;
+
+            if (c.isDeleted) {
+                authorHtml = `<strong>(Gelöscht)</strong>`;
+                contentHtml = `<div style="margin-top: 2px; font-style: italic; color: #999;">Diese Nachricht wurde gelöscht.</div>`;
+            } else {
+                authorHtml = `<strong>${c.authorName || 'User #' + c.userId}</strong>`;
+
+                let editedHtml = '';
+                if (c.editedAt) {
+                    const editDate = new Date(c.editedAt);
+                    const editStr = editDate.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    editedHtml = `<span style="font-size:0.8em; color:#999; margin-left:5px;" title="${editStr}">(bearbeitet)</span>`;
+                }
+
+                contentHtml = `<div style="margin-top: 2px; white-space: pre-wrap;" id="comment-text-${c.id}">${c.text} ${editedHtml}</div>`;
+
+                if (isOwner) {
+                    actionsHtml = `
+                        <div class="comment-actions" style="display:flex; gap:8px; margin-top:5px; justify-content: flex-end;">
+                             <button class="btn-icon-circle btn-edit-comment" data-id="${c.id}" title="Bearbeiten">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                             </button>
+                             <button class="btn-icon-circle btn-delete-comment" data-id="${c.id}" title="Löschen" style="color: #dc3545;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                             </button>
+                        </div>
+                    `;
+                }
+            }
+
+            return `<div class="comment" id="comment-${c.id}" style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <div style="font-size: 0.85em; color: #555; display: flex; justify-content: space-between; align-items: center;">
+                    ${authorHtml}
                     <span>${timeStr}</span>
                 </div>
-                <div style="margin-top: 2px;">${c.text}</div>
+                ${contentHtml}
+                ${actionsHtml}
             </div>`;
         }).join('');
 
@@ -367,7 +412,27 @@ class UIManager {
             });
             document.getElementById('btn-edit').addEventListener('click', () => this.showEditForm(obj));
         }
-        if (this.app.currentUser) document.getElementById('comment-form').addEventListener('submit', (e) => { e.preventDefault(); this.app.handleAddComment(obj.id, e.target.elements.text.value); });
+        if (this.app.currentUser) {
+            document.getElementById('comment-form').addEventListener('submit', (e) => { e.preventDefault(); this.app.handleAddComment(obj.id, e.target.elements.text.value); });
+
+            // Event listeners for comments
+            document.querySelectorAll('.btn-delete-comment').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // prevent collapsing or other side effects
+                    const id = e.currentTarget.dataset.id;
+                    this.showConfirm("Möchten Sie diese Nachricht wirklich löschen?", "Kommentar löschen", () => {
+                        this.app.handleDeleteComment(id, obj.id);
+                    });
+                });
+            });
+
+            document.querySelectorAll('.btn-edit-comment').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.enableCommentEditMode(e.currentTarget.dataset.id);
+                });
+            });
+        }
     }
 
     showEditForm(obj) {
@@ -603,6 +668,35 @@ class UIManager {
 
         this.btnModalPrimary.addEventListener('click', handleConfirm);
         this.btnModalSecondary.addEventListener('click', handleCancel);
+    }
+
+    enableCommentEditMode(commentId) {
+        const commentDiv = document.getElementById(`comment-${commentId}`);
+        const commentObj = this.app.selectedObject.comments.find(c => String(c.id) === String(commentId));
+
+        if (!commentObj || !commentDiv) return;
+
+        commentDiv.innerHTML = `
+            <form class="edit-comment-form" data-id="${commentId}">
+                <textarea class="form-control" name="text" style="width:100%; box-sizing:border-box; min-height:60px; margin-bottom:5px;">${commentObj.text}</textarea>
+                <div style="display:flex; gap:5px; justify-content:flex-end;">
+                    <button type="button" class="btn btn-outline btn-cancel-edit" style="font-size:0.8rem; padding: 4px 8px;">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary" style="font-size:0.8rem; padding: 4px 8px;">Speichern</button>
+                </div>
+            </form>
+        `;
+
+        const form = commentDiv.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newText = form.elements.text.value;
+            this.app.handleUpdateComment(commentId, this.app.selectedObject.id, newText);
+        });
+
+        commentDiv.querySelector('.btn-cancel-edit').addEventListener('click', () => {
+            // Re-render
+            this.showObjectDetails(this.app.selectedObject);
+        });
     }
 
     addTooltips() {

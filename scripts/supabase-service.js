@@ -223,7 +223,9 @@ class SupabaseService {
                 userId: c.user_id,
                 authorName: c.author_name,
                 text: c.text,
-                timestamp: c.timestamp
+                timestamp: c.timestamp,
+                editedAt: c.edited_at,
+                isDeleted: c.is_deleted
             }))
         };
     }
@@ -343,5 +345,26 @@ class SupabaseService {
                 timestamp: data.timestamp
             }
         };
+    }
+
+    async updateComment(commentId, text) {
+        const { error } = await this.client
+            .from('comments')
+            .update({ text: text, edited_at: new Date() })
+            .eq('id', commentId);
+
+        if (error) return { success: false, message: error.message };
+        return { success: true };
+    }
+
+    async deleteComment(commentId) {
+        // Soft delete: clear text and set flag
+        const { error } = await this.client
+            .from('comments')
+            .update({ text: '', is_deleted: true })
+            .eq('id', commentId);
+
+        if (error) return { success: false, message: error.message };
+        return { success: true };
     }
 }
