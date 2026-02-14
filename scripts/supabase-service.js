@@ -157,10 +157,8 @@ class SupabaseService {
     // --- Objects ---
 
     async getObjects() {
-        // Fetch objects from the view (masked)
-        const { data: objects, error: objError } = await this.client
-            .from('objects')
-            .select('*');
+        // Fetch objects via the secure RPC function (masked)
+        const { data: objects, error: objError } = await this.client.rpc('get_objects');
 
         if (objError) {
             console.error("Error fetching objects:", objError);

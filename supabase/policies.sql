@@ -68,28 +68,84 @@ create policy "Authenticated users can insert objects" on objects_data for inser
 
 
 -- =========================================================
--- 3. MASKING VIEW
+-- 3. MASKING FUNCTION (Replaces View for Security)
 -- =========================================================
+-- Drop the old view if it exists
 drop view if exists objects;
-create or replace view objects as
-select
-  id, user_id, category, name, address, type, size_sqm, heating_system, energy_source, 
-  heating_year, planned_replacement_year, estimated_demand, geom, website, org_type, 
-  goal, source_type, info, implementation_schedule, additional_consumers_possible,
-  (
-    case 
-      when (contact->>'hideEmail')::boolean = true and (auth.uid() is null or auth.uid() != user_id) then contact - 'email'
-      else contact 
-    end
-  ) - (
-    case 
-      when (contact->>'hidePhone')::boolean = true and (auth.uid() is null or auth.uid() != user_id) then 'phone'
-      else 'none_existing_key' 
-    end
-  ) as contact
-from objects_data;
+-- Drop the existing function if it exists (necessary if return type changes)
+drop function if exists get_objects;
 
-grant select on objects to anon, authenticated;
+-- Create a secure function to fetch objects.
+-- SECURITY DEFINER allows it to access the contact data in objects_data.
+-- search_path = public prevents search path hijacking.
+create or replace function get_objects()
+returns table (
+  id bigint,
+  user_id uuid,
+  category text,
+  name text,
+  address text,
+  type text,
+  size_sqm numeric,
+  heating_system text,
+  energy_source text,
+  heating_year int,
+  planned_replacement_year int,
+  estimated_demand numeric,
+  geom jsonb,
+  website text,
+  org_type text,
+  goal text,
+  source_type text,
+  info text,
+  implementation_schedule text,
+  additional_consumers_possible boolean,
+  contact jsonb
+) 
+security definer
+set search_path = public
+language plpgsql
+as $$
+begin
+  return query
+  select
+    o.id, 
+    o.user_id, 
+    o.category, 
+    o.name, 
+    o.address, 
+    o.type, 
+    o.size_sqm, 
+    o.heating_system, 
+    o.energy_source, 
+    o.heating_year, 
+    o.planned_replacement_year, 
+    o.estimated_demand, 
+    o.geom, 
+    o.website, 
+    o.org_type, 
+    o.goal, 
+    o.source_type, 
+    o.info, 
+    o.implementation_schedule, 
+    o.additional_consumers_possible,
+    (
+      case 
+        when (o.contact->>'hideEmail')::boolean = true and (auth.uid() is null or auth.uid() != o.user_id) then o.contact - 'email'
+        else o.contact 
+      end
+    ) - (
+      case 
+        when (o.contact->>'hidePhone')::boolean = true and (auth.uid() is null or auth.uid() != o.user_id) then 'phone'
+        else 'none_existing_key' 
+      end
+    ) as contact
+  from objects_data o;
+end;
+$$;
+
+-- Grant execute permission to everyone
+grant execute on function get_objects to anon, authenticated;
 
 
 -- =========================================================
