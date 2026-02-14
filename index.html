@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/map.css">
     <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/info-sidebar.css">
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -77,6 +78,66 @@
                 <!-- Dynamic Content Injected Here -->
             </div>
         </aside>
+
+        <!-- Info Sidebar (Right Side) -->
+        <aside class="info-sidebar" id="info-sidebar">
+            <div class="info-sidebar-header">
+                <h2>ℹ️ Über WärmeMatch</h2>
+                <button class="btn btn-outline btn-icon" id="btn-close-info-sidebar">✕</button>
+            </div>
+            <div class="info-sidebar-content">
+                <section class="info-section">
+                    <h3>Was ist WärmeMatch Berlin?</h3>
+                    <p>WärmeMatch Berlin ist eine interaktive Plattform zur Vernetzung von Wärmeerzeugern,
+                        Wärmenetzinitiativen und interessierten Gebäudeeigentümer:innen in Berlin.</p>
+                </section>
+
+                <section class="info-section">
+                    <h3>🎯 Ziele</h3>
+                    <ul>
+                        <li>Förderung nachhaltiger Wärmeversorgung</li>
+                        <li>Vernetzung von Akteuren im Wärmesektor</li>
+                        <li>Transparente Darstellung von Projekten und Initiativen</li>
+                    </ul>
+                </section>
+
+                <section class="info-section">
+                    <h3>📖 Grundlegende Nutzung</h3>
+                    <ul>
+                        <li><strong>Karte erkunden:</strong> Navigieren Sie durch die Karte, um bestehende Projekte,
+                            Initiativen und Interessensbekundungen zu sehen</li>
+                        <li><strong>Details anzeigen:</strong> Klicken Sie auf einen Marker, um Details anzuzeigen</li>
+                        <li><strong>Suchen:</strong> Nutzen Sie die Suchfunktion, um nach Adressen oder Projekten zu
+                            suchen</li>
+                        <li><strong>Anmelden:</strong> Registrieren Sie sich, um eigene Einträge zu erstellen</li>
+                        <li><strong>Neuer Eintrag:</strong> Nach der Anmeldung können Sie neue Projekte, Initiativen
+                            oder
+                            Interessensbekundungen hinzufügen</li>
+                    </ul>
+                </section>
+
+                <section class="info-section">
+                    <h3>🏷️ Objekttypen</h3>
+                    <ul>
+                        <li><strong>Interessensbekundung (Gebäude):</strong> Gebäude mit Interesse an Nahwärmeanschluss
+                        </li>
+                        <li><strong>Wärmenetzinitiative:</strong> Geplante oder laufende Wärmenetz-Initiativen</li>
+                        <li><strong>Wärmenetzprojekt:</strong> Konkrete Wärmenetzprojekte in Umsetzung</li>
+                        <li><strong>Abwärme-Quellen:</strong> Potenzielle Quellen für Abwärmenutzung</li>
+                    </ul>
+                </section>
+            </div>
+        </aside>
+
+        <!-- Info Sidebar Toggle Button (Fixed) -->
+        <button class="info-sidebar-toggle" id="info-sidebar-toggle" title="Info anzeigen/verbergen">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+        </button>
 
         <!-- Auth Modal (Simple Overlay setup) -->
         <div id="auth-modal"

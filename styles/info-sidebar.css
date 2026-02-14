@@ -1,0 +1,178 @@
+/* Info Sidebar - Right Side */
+.info-sidebar {
+    width: 350px;
+    max-width: 100%;
+    background: var(--color-white);
+    border-left: 1px solid var(--color-border);
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-sidebar.active {
+    transform: translateX(0);
+}
+
+.info-sidebar-header {
+    padding: var(--spacing-md);
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-sidebar-header h2 {
+    font-size: 1.25rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.info-sidebar-header .btn {
+    border-color: white;
+    color: white;
+}
+
+.info-sidebar-header .btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: white;
+    color: white;
+}
+
+.info-sidebar-content {
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    flex: 1;
+}
+
+.info-section {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.info-section:last-child {
+    border-bottom: none;
+}
+
+.info-section h3 {
+    color: var(--color-primary);
+    font-size: 1.1rem;
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.info-section p {
+    line-height: 1.6;
+    color: var(--color-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.info-section ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.info-section ul li {
+    padding: var(--spacing-xs) 0;
+    padding-left: var(--spacing-md);
+    position: relative;
+    line-height: 1.5;
+    color: var(--color-secondary);
+}
+
+.info-section ul li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-weight: bold;
+}
+
+.info-section ul li strong {
+    color: var(--color-primary);
+}
+
+/* Info Sidebar Toggle Button */
+.info-sidebar-toggle {
+    position: fixed;
+    right: 20px;
+    bottom: 80px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 69, 145, 0.4);
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.info-sidebar-toggle:hover {
+    background: #003366;
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 69, 145, 0.5);
+}
+
+.info-sidebar-toggle svg {
+    width: 28px;
+    height: 28px;
+}
+
+/* When sidebar is active, hide the toggle button */
+.info-sidebar.active~.info-sidebar-toggle {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .info-sidebar {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .info-sidebar-toggle {
+        right: 15px;
+        bottom: 70px;
+        width: 48px;
+        height: 48px;
+    }
+
+    .info-sidebar-toggle svg {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .info-sidebar-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .info-section h3 {
+        font-size: 1rem;
+    }
+
+    .info-sidebar-content {
+        padding: var(--spacing-sm);
+    }
+}

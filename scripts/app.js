@@ -16,6 +16,9 @@ class App {
         this.mapManager.init();
         await this.refreshObjects();
 
+        // Initialize info sidebar
+        this.initInfoSidebar();
+
         // Listen for auth changes
         this.api.onAuthStateChange((event, user) => {
             console.log("Auth Event:", event, user);
@@ -38,6 +41,35 @@ class App {
 
         await this.checkSession();
         this.handleUrlHash();
+    }
+
+    initInfoSidebar() {
+        const infoSidebar = document.getElementById('info-sidebar');
+        const toggleBtn = document.getElementById('info-sidebar-toggle');
+        const closeBtn = document.getElementById('btn-close-info-sidebar');
+
+        // Always show the info sidebar on page load
+        const hasVisited = localStorage.getItem('wm_has_visited');
+
+        if (!hasVisited) {
+            // First visit - show the info sidebar
+            setTimeout(() => {
+                infoSidebar.classList.add('active');
+            }, 500); // Small delay for better UX
+
+            // Mark as visited
+            localStorage.setItem('wm_has_visited', 'true');
+        }
+
+        // Toggle button click
+        toggleBtn.addEventListener('click', () => {
+            infoSidebar.classList.add('active');
+        });
+
+        // Close button click
+        closeBtn.addEventListener('click', () => {
+            infoSidebar.classList.remove('active');
+        });
     }
 
     async checkSession() {

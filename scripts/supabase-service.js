@@ -217,6 +217,7 @@ class SupabaseService {
             goal: o.goal,
             sourceType: o.source_type,
             info: o.info,
+            status: o.status,
             implementationSchedule: o.implementation_schedule,
             additionalConsumersPossible: o.additional_consumers_possible,
             comments: (comments || []).map(c => ({
@@ -248,6 +249,7 @@ class SupabaseService {
             org_type: objectData.orgType,
             goal: objectData.goal,
             source_type: objectData.sourceType,
+            status: objectData.status,
             info: objectData.info
         };
 
@@ -284,6 +286,7 @@ class SupabaseService {
             goal: objectData.goal,
             source_type: objectData.sourceType,
             info: objectData.info,
+            status: objectData.status,
             implementation_schedule: objectData.implementationSchedule,
             additional_consumers_possible: objectData.additionalConsumersPossible
         };

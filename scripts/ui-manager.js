@@ -52,9 +52,9 @@ class UIManager {
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
-                    Neuer Antrag
+                    Neuer Eintrag
                 </button>
-                <button class="btn btn-outline" id="btn-my-entries">Meine Anträge</button>
+                <button class="btn btn-outline" id="btn-my-entries">Meine Einträge</button>
                 <button class="btn btn-icon btn-outline user-initials-btn" id="btn-profile" title="Profil">${initials}</button>
                 <button class="btn btn-icon btn-outline" id="btn-logout" title="Abmelden">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -150,14 +150,14 @@ class UIManager {
                     <select class="form-control" name="type" required>
                         <option value="Wohngebäude">Wohngebäude</option>
                         <option value="Gewerbegebäude">Gewerbegebäude</option>
-                        <option value="Gemischt">Gemischt</option>
+                        <option value="Sonstiges">Sonstiges</option>
                     </select>
                 </div>
                 <div class="form-group"><label class="form-label">Größe (m²)</label><input type="number" class="form-control" name="sizeSqm"></div>
-                <div class="form-group"><label class="form-label">Heizsystem</label><input type="text" class="form-control" name="heatingSystem"></div>
+                <div class="form-group"><label class="form-label">Heizungsart</label><input type="text" class="form-control" name="heatingSystem"></div>
                 <div class="form-group"><label class="form-label">Energieträger</label>
                     <select class="form-control" name="energySource">
-                         <option value="Gas">Gas</option>
+                        <option value="Gas">Gas</option>
                         <option value="Öl">Öl</option>
                         <option value="Fernwärme">Fernwärme</option>
                         <option value="Strom">Strom</option>
@@ -166,15 +166,15 @@ class UIManager {
                     </select>
                 </div>
                 <div class="form-group"><label class="form-label">Baujahr Heizung</label><input type="number" class="form-control" name="heatingYear"></div>
-                <div class="form-group"><label class="form-label">Geplanter Tausch (Jahr)</label><input type="number" class="form-control" name="plannedReplacementYear"></div>
-                <div class="form-group"><label class="form-label">Jahresbedarf (kWh) *</label><input type="number" class="form-control" name="estimatedDemand" required></div>
+                <div class="form-group"><label class="form-label">Geplanter Heizungstausch (Jahr)</label><input type="number" class="form-control" name="plannedReplacementYear"></div>
+                <div class="form-group"><label class="form-label">Jährlicher Energieverbrauch (kWh) *</label><input type="number" class="form-control" name="estimatedDemand" required></div>
                 <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info"></textarea></div>
             `;
         } else if (type === 'initiative') {
             formHTML = `
                 <div class="form-group"><label class="form-label">Name der Initiative *</label><input type="text" class="form-control" name="name" required></div>
                  <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website"></div>
-                 <div class="form-group"><label class="form-label">Typ</label><input type="text" class="form-control" name="orgType"></div>
+                 <div class="form-group"><label class="form-label">Organisationsform</label><input type="text" class="form-control" name="orgType"></div>
                  <div class="form-group"><label class="form-label">Zielsetzung</label><textarea class="form-control" name="goal"></textarea></div>
                  <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info"></textarea></div>
             `;
@@ -182,6 +182,14 @@ class UIManager {
             formHTML = `
                 <div class="form-group"><label class="form-label">Name des Projekts *</label><input type="text" class="form-control" name="name" required></div>
                 <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website"></div>
+                <div class="form-group"><label class="form-label">Status</label>
+                    <select class="form-control" name="status">
+                        <option value="Konzeption">Konzeption</option>
+                        <option value="Planung">Planung</option>
+                        <option value="Umsetzung">Umsetzung</option>
+                        <option value="Betrieb">Betrieb</option>
+                    </select>
+                </div>
                 <div class="form-group"><label class="form-label">Umsetzungszeitplan</label><input type="text" class="form-control" name="implementationSchedule"></div>
                 <div class="form-group">
                     <div style="display:flex; align-items:center; gap:10px;">
@@ -194,7 +202,6 @@ class UIManager {
         } else if (type === 'wasteheat') {
             formHTML = `
                 <div class="form-group"><label class="form-label">Quelle / Name *</label><input type="text" class="form-control" name="name" required></div>
-                <div class="form-group"><label class="form-label">Typ</label><input type="text" class="form-control" name="sourceType"></div>
                 <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info"></textarea></div>
             `;
         }
@@ -266,41 +273,41 @@ class UIManager {
             detailsHtml += `
                 <p><strong>Name:</strong> ${obj.name || 'Unbenannt'}</p>
                 <p><strong>Adresse:</strong> ${obj.address}</p>
-                <p><strong>Bedarf:</strong> ${obj.estimatedDemand ? obj.estimatedDemand.toLocaleString('de-DE') : '-'} kWh/Jahr</p>
+                <p><strong>Energieverbrauch:</strong> ${obj.estimatedDemand ? obj.estimatedDemand.toLocaleString('de-DE') : '-'} kWh/Jahr</p>
                 ${obj.type ? `<p><strong>Gebäudetyp:</strong> ${obj.type}</p>` : ''}
                 ${obj.sizeSqm ? `<p><strong>Größe:</strong> ${obj.sizeSqm} m²</p>` : ''}
-                ${obj.heatingSystem ? `<p><strong>Heizsystem:</strong> ${obj.heatingSystem}</p>` : ''}
+                ${obj.heatingSystem ? `<p><strong>Heizungsart:</strong> ${obj.heatingSystem}</p>` : ''}
                 ${obj.energySource ? `<p><strong>Energieträger:</strong> ${obj.energySource}</p>` : ''}
                 ${obj.heatingYear ? `<p><strong>Baujahr Heizung:</strong> ${obj.heatingYear}</p>` : ''}
-                ${obj.plannedReplacementYear ? `<p><strong>Geplanter Tausch:</strong> ${obj.plannedReplacementYear}</p>` : ''}
+                ${obj.plannedReplacementYear ? `<p><strong>Geplanter Heizungstausch:</strong> ${obj.plannedReplacementYear}</p>` : ''}
             `;
         } else if (obj.category === 'initiative') {
             detailsHtml += `
                 <p><strong>Name:</strong> ${obj.name}</p>
                 ${obj.website ? `<p><strong>Website:</strong> <a href="${obj.website}" target="_blank" rel="noopener noreferrer">${obj.website}</a></p>` : ''}
-                ${obj.orgType ? `<p><strong>Typ:</strong> ${obj.orgType}</p>` : ''}
+                ${obj.orgType ? `<p><strong>Organisationsform:</strong> ${obj.orgType}</p>` : ''}
                 <p><strong>Ziel:</strong> ${obj.goal || '-'}</p>
             `;
         } else if (obj.category === 'project') {
             detailsHtml += `
                 <p><strong>Name:</strong> ${obj.name}</p>
                 ${obj.website ? `<p><strong>Website:</strong> <a href="${obj.website}" target="_blank" rel="noopener noreferrer">${obj.website}</a></p>` : ''}
+                ${obj.status ? `<p><strong>Status:</strong> ${obj.status}</p>` : ''}
                 ${obj.implementationSchedule ? `<p><strong>Umsetzungszeitplan:</strong> ${obj.implementationSchedule}</p>` : ''}
                 <p><strong>Weitere Abnehmer möglich:</strong> ${obj.additionalConsumersPossible ? 'Ja' : 'Nein'}</p>
             `;
         } else if (obj.category === 'wasteheat') {
             detailsHtml += `
-                <p><strong>Quelle:</strong> ${obj.name}</p>
-                ${obj.sourceType ? `<p><strong>Typ:</strong> ${obj.sourceType}</p>` : ''}
+                <p><strong>Name:</strong> ${obj.name}</p>
             `;
         }
 
         if (obj.info) {
-            detailsHtml += `<p><strong>Informationen:</strong> ${obj.info}</p>`;
+            detailsHtml += `<div style="margin-top: 0;"><strong>Zusätzliche Informationen:</strong></div><div style="margin-top: 0;">${obj.info}</div>`;
         }
 
         const contactHtml = obj.contact ? `
-            <p>${obj.contact.name} | 
+            <p style="margin-top: 0;">${obj.contact.name} | 
             ${obj.contact.hideEmail ? '<span style="color:#777; font-style:italic;">(Email nicht öffentlich)</span>' : obj.contact.email} | 
             ${obj.contact.hidePhone ? '<span style="color:#777; font-style:italic;">(Telefon nicht öffentlich)</span>' : (obj.contact.phone || '-')}</p>
         ` : '';
@@ -322,8 +329,8 @@ class UIManager {
         const html = `
             <div class="building-card" style="border:none;">
                 ${detailsHtml}
-                <hr>
-                <h4>Kontakt</h4>
+                <hr style="margin: 10px 0;">
+                <h4 style="margin-bottom: 5px;">Kontakt</h4>
                 ${contactHtml}
             </div>
             ${isOwner ? `
@@ -364,11 +371,11 @@ class UIManager {
                     <select class="form-control" name="type" required>
                         <option value="Wohngebäude" ${obj.type === 'Wohngebäude' ? 'selected' : ''}>Wohngebäude</option>
                         <option value="Gewerbegebäude" ${obj.type === 'Gewerbegebäude' ? 'selected' : ''}>Gewerbegebäude</option>
-                        <option value="Gemischt" ${obj.type === 'Gemischt' ? 'selected' : ''}>Gemischt</option>
+                        <option value="Sonstiges" ${obj.type === 'Sonstiges' ? 'selected' : ''}>Sonstiges</option>
                     </select>
                 </div>
                 <div class="form-group"><label class="form-label">Größe (m²)</label><input type="number" class="form-control" name="sizeSqm" value="${obj.sizeSqm || ''}"></div>
-                <div class="form-group"><label class="form-label">Heizsystem</label><input type="text" class="form-control" name="heatingSystem" value="${obj.heatingSystem || ''}"></div>
+                <div class="form-group"><label class="form-label">Heizungsart</label><input type="text" class="form-control" name="heatingSystem" value="${obj.heatingSystem || ''}"></div>
                 <div class="form-group"><label class="form-label">Energieträger</label>
                     <select class="form-control" name="energySource">
                          <option value="Gas" ${obj.energySource === 'Gas' ? 'selected' : ''}>Gas</option>
@@ -380,15 +387,15 @@ class UIManager {
                     </select>
                 </div>
                 <div class="form-group"><label class="form-label">Baujahr Heizung</label><input type="number" class="form-control" name="heatingYear" value="${obj.heatingYear || ''}"></div>
-                <div class="form-group"><label class="form-label">Geplanter Tausch (Jahr)</label><input type="number" class="form-control" name="plannedReplacementYear" value="${obj.plannedReplacementYear || ''}"></div>
-                <div class="form-group"><label class="form-label">Jahresbedarf (kWh) *</label><input type="number" class="form-control" name="estimatedDemand" value="${obj.estimatedDemand}" required></div>
+                <div class="form-group"><label class="form-label">Geplanter Heizungstausch (Jahr)</label><input type="number" class="form-control" name="plannedReplacementYear" value="${obj.plannedReplacementYear || ''}"></div>
+                <div class="form-group"><label class="form-label">Jährlicher Energieverbrauch (kWh) *</label><input type="number" class="form-control" name="estimatedDemand" value="${obj.estimatedDemand}" required></div>
                 <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info">${obj.info || ''}</textarea></div>
             `;
         } else if (type === 'initiative') {
             formHTML = `
                 <div class="form-group"><label class="form-label">Name der Initiative *</label><input type="text" class="form-control" name="name" value="${obj.name}" required></div>
                  <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website" value="${obj.website || ''}"></div>
-                 <div class="form-group"><label class="form-label">Typ</label><input type="text" class="form-control" name="orgType" value="${obj.orgType || ''}"></div>
+                 <div class="form-group"><label class="form-label">Organisationsform</label><input type="text" class="form-control" name="orgType" value="${obj.orgType || ''}"></div>
                  <div class="form-group"><label class="form-label">Zielsetzung</label><textarea class="form-control" name="goal">${obj.goal || ''}</textarea></div>
                  <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info">${obj.info || ''}</textarea></div>
             `;
@@ -396,6 +403,14 @@ class UIManager {
             formHTML = `
                 <div class="form-group"><label class="form-label">Name des Projekts *</label><input type="text" class="form-control" name="name" value="${obj.name || ''}" required></div>
                 <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website" value="${obj.website || ''}"></div>
+                <div class="form-group"><label class="form-label">Status</label>
+                    <select class="form-control" name="status">
+                        <option value="Konzeption" ${obj.status === 'Konzeption' ? 'selected' : ''}>Konzeption</option>
+                        <option value="Planung" ${obj.status === 'Planung' ? 'selected' : ''}>Planung</option>
+                        <option value="Umsetzung" ${obj.status === 'Umsetzung' ? 'selected' : ''}>Umsetzung</option>
+                        <option value="Betrieb" ${obj.status === 'Betrieb' ? 'selected' : ''}>Betrieb</option>
+                    </select>
+                </div>
                 <div class="form-group"><label class="form-label">Umsetzungszeitplan</label><input type="text" class="form-control" name="implementationSchedule" value="${obj.implementationSchedule || ''}"></div>
                 <div class="form-group">
                     <div style="display:flex; align-items:center; gap:10px;">
@@ -408,7 +423,6 @@ class UIManager {
         } else if (type === 'wasteheat') {
             formHTML = `
                 <div class="form-group"><label class="form-label">Quelle / Name *</label><input type="text" class="form-control" name="name" value="${obj.name}" required></div>
-                <div class="form-group"><label class="form-label">Typ</label><input type="text" class="form-control" name="sourceType" value="${obj.sourceType || ''}"></div>
                 <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info">${obj.info || ''}</textarea></div>
             `;
         }
@@ -463,7 +477,7 @@ class UIManager {
         this.app.api.getObjects().then(objects => {
             const myObjects = objects.filter(o => o.userId === user.id);
             const html = myObjects.length ? `<div class="list-group">${myObjects.map(o => `<div class="building-card item-my-entry" data-id="${o.id}" style="cursor:pointer;"><strong>${o.name || o.address}</strong> <span class="badge badge-${o.category}">${this.getCategoryLabel(o.category)}</span></div>`).join('')}</div>` : "<p>Keine Einträge.</p>";
-            this.openSidebar("Meine Anträge", html);
+            this.openSidebar("Meine Einträge", html);
             document.querySelectorAll('.item-my-entry').forEach(el => el.addEventListener('click', () => this.app.selectObject(objects.find(x => x.id == el.dataset.id))));
         });
     }
