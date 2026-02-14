@@ -173,7 +173,7 @@ class UIManager {
         } else if (type === 'initiative') {
             formHTML = `
                 <div class="form-group"><label class="form-label">Name der Initiative *</label><input type="text" class="form-control" name="name" required></div>
-                 <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website"></div>
+                 <div class="form-group"><label class="form-label">Website</label><input type="text" class="form-control" name="website" placeholder="example.com"></div>
                  <div class="form-group"><label class="form-label">Organisationsform</label><input type="text" class="form-control" name="orgType"></div>
                  <div class="form-group"><label class="form-label">Zielsetzung</label><textarea class="form-control" name="goal"></textarea></div>
                  <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info"></textarea></div>
@@ -181,7 +181,7 @@ class UIManager {
         } else if (type === 'project') {
             formHTML = `
                 <div class="form-group"><label class="form-label">Name des Projekts *</label><input type="text" class="form-control" name="name" required></div>
-                <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website"></div>
+                <div class="form-group"><label class="form-label">Website</label><input type="text" class="form-control" name="website" placeholder="example.com"></div>
                 <div class="form-group"><label class="form-label">Status</label>
                     <select class="form-control" name="status">
                         <option value="Konzeption">Konzeption</option>
@@ -248,6 +248,16 @@ class UIManager {
                 hidePhone: !!data.hidePhone
             };
             data.geom = { lat: parseFloat(data.lat), lng: parseFloat(data.lng) };
+
+            // Auto-prepend https:// to website if needed
+            if (data.website && data.website.trim() !== '') {
+                let url = data.website.trim();
+                if (!/^https?:\/\//i.test(url)) {
+                    url = 'https://' + url;
+                }
+                data.website = url;
+            }
+
             delete data.contactName; delete data.contactEmail; delete data.contactPhone; delete data.hideEmail; delete data.hidePhone;
             this.app.handleSaveObject(data);
         });
@@ -267,7 +277,7 @@ class UIManager {
         const isOwner = this.app.currentUser && this.app.currentUser.id === obj.userId;
         const categoryLabel = this.getCategoryLabel(obj.category);
 
-        let detailsHtml = `<p><strong>Kategorie:</strong> <span class="badge badge-${obj.category}">${categoryLabel}</span></p>`;
+        let detailsHtml = `<p><strong>Kategorie:</strong> <span class="badge badge-${obj.category}" style="font-family: inherit; font-size: inherit;">${categoryLabel}</span></p>`;
 
         if (obj.category === 'building') {
             detailsHtml += `
@@ -342,7 +352,7 @@ class UIManager {
             <div class="comments-section">
                 <h4>Kommentare</h4>
                 <div class="comments-list">
-                    ${commentsHtml.length > 0 ? commentsHtml : '<p style="font-style:italic; color:#777;">Keine Kommentare vorhanden.</p>'}
+                    ${commentsHtml.length > 0 ? commentsHtml : (this.app.currentUser ? '<p style="font-style:italic; color:#777;">Keine Kommentare vorhanden.</p>' : '<p style="font-style:italic; color:#777;">Keine Kommentare vorhanden. Melden Sie sich an, um zu kommentieren.</p>')}
                 </div>
                 ${this.app.currentUser ? `<form id="comment-form" style="margin-top:10px;"><input class="form-control" name="text" placeholder="Kommentar..." required><button class="btn btn-primary" style="width:100%; margin-top:5px;">Senden</button></form>` : ''}
             </div>
@@ -394,7 +404,7 @@ class UIManager {
         } else if (type === 'initiative') {
             formHTML = `
                 <div class="form-group"><label class="form-label">Name der Initiative *</label><input type="text" class="form-control" name="name" value="${obj.name}" required></div>
-                 <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website" value="${obj.website || ''}"></div>
+                 <div class="form-group"><label class="form-label">Website</label><input type="text" class="form-control" name="website" value="${obj.website || ''}" placeholder="example.com"></div>
                  <div class="form-group"><label class="form-label">Organisationsform</label><input type="text" class="form-control" name="orgType" value="${obj.orgType || ''}"></div>
                  <div class="form-group"><label class="form-label">Zielsetzung</label><textarea class="form-control" name="goal">${obj.goal || ''}</textarea></div>
                  <div class="form-group"><label class="form-label">Zusätzliche Informationen</label><textarea class="form-control" name="info">${obj.info || ''}</textarea></div>
@@ -402,7 +412,7 @@ class UIManager {
         } else if (type === 'project') {
             formHTML = `
                 <div class="form-group"><label class="form-label">Name des Projekts *</label><input type="text" class="form-control" name="name" value="${obj.name || ''}" required></div>
-                <div class="form-group"><label class="form-label">Website</label><input type="url" class="form-control" name="website" value="${obj.website || ''}"></div>
+                <div class="form-group"><label class="form-label">Website</label><input type="text" class="form-control" name="website" value="${obj.website || ''}" placeholder="example.com"></div>
                 <div class="form-group"><label class="form-label">Status</label>
                     <select class="form-control" name="status">
                         <option value="Konzeption" ${obj.status === 'Konzeption' ? 'selected' : ''}>Konzeption</option>
@@ -468,6 +478,16 @@ class UIManager {
                 hidePhone: !!data.hidePhone
             };
             data.id = parseInt(data.id);
+
+            // Auto-prepend https:// to website if needed
+            if (data.website && data.website.trim() !== '') {
+                let url = data.website.trim();
+                if (!/^https?:\/\//i.test(url)) {
+                    url = 'https://' + url;
+                }
+                data.website = url;
+            }
+
             delete data.contactName; delete data.contactEmail; delete data.contactPhone; delete data.hideEmail; delete data.hidePhone;
             this.app.handleUpdateObject(data);
         });
